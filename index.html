@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>季节鸟类数据统计</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        #chart-container {
+            width: 800px;
+            height: 500px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="chart-container"></div>
+    <script>
+        // 初始化图表
+        var myChart = echarts.init(document.getElementById('chart-container'));
+
+        // 数据准备
+        var seasons = ['春', '夏', '秋', '冬'];
+        var birdCounts = [346653, 34876, 528670, 721755];
+        var speciesCounts = [85529, 37231, 67844, 62652];
+
+        // 调整后的季节背景色（提高透明度至0.7）
+        var seasonColors = [
+            'rgba(178, 255, 178, 0.7)',  // 春: 浅绿
+            'rgba(255, 204, 153, 0.7)',  // 夏: 浅橙
+            'rgba(255, 255, 153, 0.7)',  // 秋: 浅黄
+            'rgba(153, 204, 255, 0.7)'   // 冬: 浅蓝
+        ];
+
+        // 配置项
+        var option = {
+            title: {
+                text: '季节鸟类数据统计',
+                left: 'center',
+                textStyle: {
+                    fontSize: 18,
+                    fontWeight: 'bold'
+                }
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                formatter: function(params) {
+                    var result = params[0].axisValue + '<br/>';
+                    params.forEach(function(item) {
+                        var value = item.value >= 10000 
+                            ? (item.value / 10000).toFixed(1) + '万' 
+                            : item.value;
+                        result += item.marker + ' ' + item.seriesName + ': ' + value + '<br/>';
+                    });
+                    return result;
+                }
+            },
+            legend: {
+                data: ['鸟群数量', '鸟种数量'],
+                top: 40,
+                itemWidth: 20,
+                itemHeight: 12
+            },
+            grid: {
+                top: 80,
+                bottom: 30,
+                left: 60,
+                right: 40
+            },
+            xAxis: {
+                type: 'category',
+                data: seasons,
+                axisLabel: {
+                    fontSize: 14,
+                    formatter: function(value, index) {
+                        // 在标签下方添加彩色标记
+                        return value + '\n{seasonBg|■}';
+                    },
+                    rich: {
+                        seasonBg: {
+                            color: function(index) {
+                                return seasonColors[index].replace('0.7', '1');
+                            },
+                            fontSize: 16,
+                            padding: [5, 0, 0, 0]
+                        }
+                    }
+                },
+                axisTick: { show: false },
+                axisLine: {
+                    lineStyle: {
+                        color: '#999'
+                    }
+                }
+            },
+            yAxis: {
+                type: 'value',
+                name: '数量',
+                nameTextStyle: {
+                    padding: [0, 0, 0, 40]
+                },
+                axisLabel: {
+                    formatter: function(value) {
+                        return value >= 10000 ? (value / 10000) + '万' : value;
+                    }
+                },
+                axisLine: {
+                    show: true,
+                    lineStyle: {
+                        color: '#999'
+                    }
+                },
+                splitLine: {
+                    lineStyle: {
+                        type: 'dashed'
+                    }
+                }
+            },
+            series: [
+                {
+                    name: '鸟群数量',
+                    type: 'bar',
+                    barWidth: '30%',
+                    data: birdCounts,
+                    itemStyle: { 
+                        color: '#5470C6',
+                        borderRadius: [4, 4, 0, 0]
+                    },
+                    markArea: {
+                        silent: true,
+                        itemStyle: {
+                            color: function(params) {
+                                return seasonColors[params.dataIndex];
+                            },
+                            borderWidth: 1,
+                            borderColor: 'rgba(0,0,0,0.1)'
+                        },
+                        data: seasons.map((_, i) => [
+                            { xAxis: i - 0.5 },
+                            { xAxis: i + 0.5 }
+                        ]),
+                        z: -1
+                    },
+                    label: {
+                        show: true,
+                        position: 'top',
+                        formatter: function(params) {
+                            return (params.value / 10000).toFixed(1) + '万';
+                        },
+                        color: '#333'
+                    }
+                },
+                {
+                    name: '鸟种数量',
+                    type: 'bar',
+                    barWidth: '30%',
+                    data: speciesCounts,
+                    itemStyle: { 
+                        color: '#91CC75',
+                        borderRadius: [4, 4, 0, 0]
+                    },
+                    label: {
+                        show: true,
+                        position: 'top',
+                        formatter: function(params) {
+                            return params.value >= 10000 ? 
+                                (params.value / 10000).toFixed(1) + '万' : params.value;
+                        },
+                        color: '#333'
+                    }
+                }
+            ]
+        };
+
+        myChart.setOption(option);
+        window.addEventListener('resize', function() {
+            myChart.resize();
+        });
+    </script>
+</body>
+</html>
